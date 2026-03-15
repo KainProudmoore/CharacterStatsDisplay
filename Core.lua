@@ -31,12 +31,14 @@ addon.frame = CharacterStatsDisplay
 CharacterStatsDisplay:SetFrameStrata("HIGH")
 
 -- 框体尺寸设置 - 调整后的值
-local FRAME_WIDTH = 160
-local LEFT_PADDING = 24
-local RIGHT_PADDING = 8
+local FRAME_WIDTH = 130
+local LEFT_PADDING = 12
+local RIGHT_PADDING = 4
 local TOP_PADDING = 10
 local BOTTOM_PADDING = 8
-local LINE_HEIGHT = 14
+local FONT_HEIGHT = 14
+local LINE_SPACING = 7  -- 字体高度的一半
+local LINE_HEIGHT = FONT_HEIGHT + LINE_SPACING
 local TITLE_HEIGHT = 20
 
 -- 获取当前需要显示的属性数量
