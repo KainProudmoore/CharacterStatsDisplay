@@ -58,10 +58,11 @@ World of Warcraft\_retail_\Interface\AddOns\CharacterStatsDisplay\
 - ✅ 设置界面（/csd命令）
 - ✅ 框体位置可拖动
 - ✅ 数据自动保存
+- ✅ 属性提升提示（数值变绿色）
 
 ## 版本信息
 
-- **当前版本**: v2.0.1
+- **当前版本**: v2.1.0
 - **游戏版本**: WoW 11.0+ (The War Within)
 - **接口版本**: 120000
 

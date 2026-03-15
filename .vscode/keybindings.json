@@ -1,0 +1,7 @@
+[
+    {
+        "key": "ctrl+shift+d",
+        "command": "workbench.action.tasks.runTask",
+        "args": "部署插件到游戏"
+    }
+]

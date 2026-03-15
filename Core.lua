@@ -138,6 +138,8 @@ end
 
 -- 当前属性值缓存
 local currentStats = {}
+-- 属性变化方向缓存（用于颜色提示）
+local statChangeDirection = {}
 
 -- 创建属性文本
 local function CreateStatTexts()
@@ -149,6 +151,7 @@ local function CreateStatTexts()
     
     -- 清除缓存，因为文本对象被重新创建了
     currentStats = {}
+    statChangeDirection = {}
     
     local currentY = -(TOP_PADDING + TITLE_HEIGHT)
     
@@ -281,12 +284,41 @@ local function GetPlayerSpeed()
     return "--"
 end
 
+-- 从字符串中提取数字（支持百分比格式如 "37.7%"）
+local function ExtractNumber(value)
+    if not value then return nil end
+    if type(value) == "number" then return value end
+    -- 移除 % 符号并转换为数字
+    local num = tonumber((tostring(value):gsub("%%", "")))
+    return num
+end
+
 -- 更新单个属性
 local function UpdateStat(key, value, color, label)
     if currentStats[key] ~= value then
+        -- 判断是否是提升（如果是数字的话）
+        local currentNum = ExtractNumber(currentStats[key])
+        local newNum = ExtractNumber(value)
+        
+        if currentNum and newNum then
+            if newNum > currentNum then
+                statChangeDirection[key] = "up"      -- 提升
+            else
+                statChangeDirection[key] = nil       -- 非提升状态，恢复默认
+            end
+        end
+        
         currentStats[key] = value
+        
         if CharacterStatsDisplay.stats[key] then
-            CharacterStatsDisplay.stats[key]:SetText(color .. label .. ": |r" .. value)
+            -- 根据变化方向决定数值颜色
+            local valueColor = "|r"  -- 默认无色（使用默认颜色）
+            if statChangeDirection[key] == "up" then
+                valueColor = "|cFF00FF00"  -- 绿色（提升）
+            end
+            
+            -- 格式：标签颜色 + 标签 + 重置 + 数值颜色 + 数值 + 重置
+            CharacterStatsDisplay.stats[key]:SetText(color .. label .. ": |r" .. valueColor .. value .. "|r")
         end
     end
 end
