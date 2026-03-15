@@ -24,16 +24,7 @@ CharacterStatsDisplay/
 
 ### 安装插件
 
-**方式一：使用部署脚本**
-```bash
-# 运行 PowerShell 脚本
-.\tools\deploy.ps1
-
-# 或运行批处理脚本
-.\tools\deploy.bat
-```
-
-**方式二：手动复制**
+**方式一：手动复制**
 将以下文件复制到游戏插件目录：
 ```
 World of Warcraft\_retail_\Interface\AddOns\CharacterStatsDisplay\
