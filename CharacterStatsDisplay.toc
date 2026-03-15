@@ -1,0 +1,8 @@
+## Interface: 120000
+## Title: 角色属性显示
+## Notes: 在界面上显示角色的装等、急速、暴击、精通、全能、移动速度等属性
+## Author: WoW Player
+## Version: 1.0.0
+## SavedVariables: CharacterStatsDisplayDB
+
+Core.lua
