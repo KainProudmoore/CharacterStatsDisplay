@@ -53,13 +53,19 @@
 ### 3.1 文件清单
 ```
 CharacterStatsDisplay/
-├── CharacterStatsDisplay.toc    # 插件清单（版本2.0.0）
-├── Core.lua                     # 主逻辑代码（核心）
-├── CHANGELOG.md                 # 更新日志
-├── DESIGN.md                    # 设计文档
-├── deploy.bat                   # Windows部署脚本
-├── deploy.ps1                   # PowerShell部署脚本
-└── CONTEXT_SUMMARY.md           # 本文档
+├── CharacterStatsDisplay.toc    # 插件清单文件
+├── Core.lua                     # 插件核心代码
+├── README.md                    # 项目说明文档
+├── docs/                        # 文档目录
+│   ├── CHANGELOG.md            # 更新日志
+│   ├── CONTEXT_SUMMARY.md      # 项目上下文总结
+│   └── DESIGN.md               # 设计文档
+├── tools/                       # 工具脚本目录
+│   ├── deploy.bat              # Windows部署脚本
+│   ├── deploy.ps1              # PowerShell部署脚本
+│   └── deploy-simple.bat       # 简化版部署脚本
+├── .trae/                       # Trae IDE配置（自动生成，不提交）
+└── .vscode/                     # VS Code配置（自动生成，不提交）
 ```
 
 ### 3.2 核心代码结构（Core.lua）
