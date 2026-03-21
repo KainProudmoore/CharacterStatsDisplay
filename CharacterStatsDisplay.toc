@@ -2,7 +2,7 @@
 ## Title: 角色属性显示
 ## Notes: 在界面上显示角色的装等、主属性、暴击、急速、精通、全能、移动速度等属性
 ## Author: WoW Player
-## Version: 2.1.0
+## Version: 2.3.0
 ## SavedVariables: CharacterStatsDisplayDB
 
 Core.lua
