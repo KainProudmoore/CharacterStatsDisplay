@@ -49,7 +49,6 @@ World of Warcraft\_retail_\Interface\AddOns\CharacterStatsDisplay\
 - ✅ 设置界面（/csd命令）
 - ✅ 框体位置可拖动
 - ✅ 数据自动保存
-- ✅ 属性提升提示（数值变绿色）
 
 ## 版本信息
 
