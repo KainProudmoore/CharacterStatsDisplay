@@ -6,11 +6,10 @@ local defaults = {
     xOfs = 20,
     yOfs = 20,
     locked = false,
+    panelStyle = "minimal",
     fontSize = 14,
     bgAlpha = 0.8,
     lineSpacing = 6,
-    showBackground = true,
-    showBorder = true,
     showLeech = false,
     showParry = false,
     showDodge = false,
@@ -26,6 +25,10 @@ local function InitDB()
         if CharacterStatsDisplayDB[key] == nil then
             CharacterStatsDisplayDB[key] = value
         end
+    end
+
+    if CharacterStatsDisplayDB.panelStyle == "wow_stats" then
+        CharacterStatsDisplayDB.panelStyle = defaults.panelStyle
     end
 end
 
@@ -141,27 +144,143 @@ CharacterStatsDisplay.title:SetPoint("TOPLEFT", CharacterStatsDisplay, "TOPLEFT"
 CharacterStatsDisplay.title:SetText("角色属性")
 
 CharacterStatsDisplay.stats = {}
+CharacterStatsDisplay.styleLayers = {}
+
+local function CreateStyleTexture(name, layer, subLevel)
+    local texture = CharacterStatsDisplay:CreateTexture(nil, layer)
+    if subLevel then
+        texture:SetDrawLayer(layer, subLevel)
+    end
+    texture:SetTexture("Interface\\Buttons\\WHITE8X8")
+    texture:Hide()
+    CharacterStatsDisplay.styleLayers[name] = texture
+    return texture
+end
+
+CreateStyleTexture("minimalBg", "BACKGROUND", 0)
+CreateStyleTexture("wowBg", "BACKGROUND", 0)
+CreateStyleTexture("wowHeader", "BACKGROUND", 1)
+CreateStyleTexture("wowHeaderGlow", "BACKGROUND", 2)
+CreateStyleTexture("wowTopEdge", "ARTWORK", 0)
+CreateStyleTexture("wowBottomEdge", "ARTWORK", 0)
+CreateStyleTexture("wowLeftEdge", "ARTWORK", 0)
+CreateStyleTexture("wowRightEdge", "ARTWORK", 0)
+CreateStyleTexture("wowTopFadeOuter", "ARTWORK", 1)
+CreateStyleTexture("wowTopFadeInner", "ARTWORK", 2)
+CreateStyleTexture("wowBottomFadeOuter", "ARTWORK", 1)
+CreateStyleTexture("wowBottomFadeInner", "ARTWORK", 2)
+CreateStyleTexture("wowLeftFadeOuter", "ARTWORK", 1)
+CreateStyleTexture("wowLeftFadeInner", "ARTWORK", 2)
+CreateStyleTexture("wowRightFadeOuter", "ARTWORK", 1)
+CreateStyleTexture("wowRightFadeInner", "ARTWORK", 2)
+
+local function HideStyleLayers()
+    for _, texture in pairs(CharacterStatsDisplay.styleLayers) do
+        texture:Hide()
+    end
+end
+
+local function UpdateStyleLayout()
+    local layers = CharacterStatsDisplay.styleLayers
+
+    layers.minimalBg:SetPoint("TOPLEFT", CharacterStatsDisplay, "TOPLEFT", 3, -3)
+    layers.minimalBg:SetPoint("BOTTOMRIGHT", CharacterStatsDisplay, "BOTTOMRIGHT", -3, 3)
+
+    layers.wowBg:SetPoint("TOPLEFT", CharacterStatsDisplay, "TOPLEFT", 4, -4)
+    layers.wowBg:SetPoint("BOTTOMRIGHT", CharacterStatsDisplay, "BOTTOMRIGHT", -4, 4)
+
+    layers.wowHeader:SetPoint("TOPLEFT", CharacterStatsDisplay, "TOPLEFT", 4, -4)
+    layers.wowHeader:SetPoint("TOPRIGHT", CharacterStatsDisplay, "TOPRIGHT", -4, -4)
+    layers.wowHeader:SetHeight(26)
+
+    layers.wowHeaderGlow:SetPoint("TOPLEFT", CharacterStatsDisplay, "TOPLEFT", 4, -26)
+    layers.wowHeaderGlow:SetPoint("TOPRIGHT", CharacterStatsDisplay, "TOPRIGHT", -4, -26)
+    layers.wowHeaderGlow:SetHeight(8)
+
+    layers.wowTopEdge:SetPoint("TOPLEFT", CharacterStatsDisplay, "TOPLEFT", 4, -4)
+    layers.wowTopEdge:SetPoint("TOPRIGHT", CharacterStatsDisplay, "TOPRIGHT", -4, -4)
+    layers.wowTopEdge:SetHeight(1)
+
+    layers.wowBottomEdge:SetPoint("BOTTOMLEFT", CharacterStatsDisplay, "BOTTOMLEFT", 4, 4)
+    layers.wowBottomEdge:SetPoint("BOTTOMRIGHT", CharacterStatsDisplay, "BOTTOMRIGHT", -4, 4)
+    layers.wowBottomEdge:SetHeight(1)
+
+    layers.wowLeftEdge:SetPoint("TOPLEFT", CharacterStatsDisplay, "TOPLEFT", 4, -4)
+    layers.wowLeftEdge:SetPoint("BOTTOMLEFT", CharacterStatsDisplay, "BOTTOMLEFT", 4, 4)
+    layers.wowLeftEdge:SetWidth(1)
+
+    layers.wowRightEdge:SetPoint("TOPRIGHT", CharacterStatsDisplay, "TOPRIGHT", -4, -4)
+    layers.wowRightEdge:SetPoint("BOTTOMRIGHT", CharacterStatsDisplay, "BOTTOMRIGHT", -4, 4)
+    layers.wowRightEdge:SetWidth(1)
+
+    layers.wowTopFadeOuter:SetPoint("TOPLEFT", CharacterStatsDisplay, "TOPLEFT", 4, -4)
+    layers.wowTopFadeOuter:SetPoint("TOPRIGHT", CharacterStatsDisplay, "TOPRIGHT", -4, -4)
+    layers.wowTopFadeOuter:SetHeight(16)
+
+    layers.wowTopFadeInner:SetPoint("TOPLEFT", CharacterStatsDisplay, "TOPLEFT", 4, -8)
+    layers.wowTopFadeInner:SetPoint("TOPRIGHT", CharacterStatsDisplay, "TOPRIGHT", -4, -8)
+    layers.wowTopFadeInner:SetHeight(22)
+
+    layers.wowBottomFadeOuter:SetPoint("BOTTOMLEFT", CharacterStatsDisplay, "BOTTOMLEFT", 4, 4)
+    layers.wowBottomFadeOuter:SetPoint("BOTTOMRIGHT", CharacterStatsDisplay, "BOTTOMRIGHT", -4, 4)
+    layers.wowBottomFadeOuter:SetHeight(14)
+
+    layers.wowBottomFadeInner:SetPoint("BOTTOMLEFT", CharacterStatsDisplay, "BOTTOMLEFT", 4, 4)
+    layers.wowBottomFadeInner:SetPoint("BOTTOMRIGHT", CharacterStatsDisplay, "BOTTOMRIGHT", -4, 4)
+    layers.wowBottomFadeInner:SetHeight(18)
+
+    layers.wowLeftFadeOuter:SetPoint("TOPLEFT", CharacterStatsDisplay, "TOPLEFT", 4, -4)
+    layers.wowLeftFadeOuter:SetPoint("BOTTOMLEFT", CharacterStatsDisplay, "BOTTOMLEFT", 4, 4)
+    layers.wowLeftFadeOuter:SetWidth(14)
+
+    layers.wowLeftFadeInner:SetPoint("TOPLEFT", CharacterStatsDisplay, "TOPLEFT", 4, -4)
+    layers.wowLeftFadeInner:SetPoint("BOTTOMLEFT", CharacterStatsDisplay, "BOTTOMLEFT", 4, 4)
+    layers.wowLeftFadeInner:SetWidth(20)
+
+    layers.wowRightFadeOuter:SetPoint("TOPRIGHT", CharacterStatsDisplay, "TOPRIGHT", -4, -4)
+    layers.wowRightFadeOuter:SetPoint("BOTTOMRIGHT", CharacterStatsDisplay, "BOTTOMRIGHT", -4, 4)
+    layers.wowRightFadeOuter:SetWidth(14)
+
+    layers.wowRightFadeInner:SetPoint("TOPRIGHT", CharacterStatsDisplay, "TOPRIGHT", -4, -4)
+    layers.wowRightFadeInner:SetPoint("BOTTOMRIGHT", CharacterStatsDisplay, "BOTTOMRIGHT", -4, 4)
+    layers.wowRightFadeInner:SetWidth(20)
+end
 
 local function ApplyBackdrop()
-    CharacterStatsDisplay:SetBackdrop({
-        bgFile = CharacterStatsDisplayDB.showBackground and "Interface\\DialogFrame\\UI-DialogBox-Background" or nil,
-        edgeFile = CharacterStatsDisplayDB.showBorder and "Interface\\DialogFrame\\UI-DialogBox-Border" or nil,
-        tile = true,
-        tileSize = 32,
-        edgeSize = 16,
-        insets = { left = 4, right = 4, top = 4, bottom = 4 }
-    })
+    local style = CharacterStatsDisplayDB.panelStyle or defaults.panelStyle
+    local layers = CharacterStatsDisplay.styleLayers
+
+    HideStyleLayers()
+
+    if style == "default" then
+        CharacterStatsDisplay:SetBackdrop({
+            bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+            edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+            tile = true,
+            tileSize = 32,
+            edgeSize = 16,
+            insets = { left = 4, right = 4, top = 4, bottom = 4 }
+        })
+    else
+        CharacterStatsDisplay:SetBackdrop(nil)
+    end
+
+    if style == "minimal" then
+        layers.minimalBg:SetColorTexture(0.03, 0.03, 0.03, CharacterStatsDisplayDB.bgAlpha)
+        layers.minimalBg:Show()
+    end
 end
 
 local function ApplyDisplaySettings()
     ApplyBackdrop()
-    if CharacterStatsDisplayDB.showBackground then
+    if (CharacterStatsDisplayDB.panelStyle or defaults.panelStyle) == "default" then
         CharacterStatsDisplay:SetBackdropColor(0, 0, 0, CharacterStatsDisplayDB.bgAlpha)
-    else
-        CharacterStatsDisplay:SetBackdropColor(0, 0, 0, 0)
     end
     CharacterStatsDisplay.title:SetFont(STANDARD_TEXT_FONT, GetFontSize() + 2, "")
+    CharacterStatsDisplay.title:SetTextColor(1, 0.82, 0)
+    CharacterStatsDisplay.title:SetPoint("TOPLEFT", CharacterStatsDisplay, "TOPLEFT", LEFT_PADDING, -TOP_PADDING)
     UpdateFrameSize()
+    UpdateStyleLayout()
 end
 
 local currentStats = {}
@@ -289,8 +408,56 @@ local function GetPlayerMastery()
 end
 
 local function GetPlayerVersatility()
-    local versatility = GetCombatRatingBonus(CR_VERSATILITY_DAMAGE_DONE)
-    return versatility and string.format("%.1f%%", versatility) or "--"
+    local function SafeCall(fn, ...)
+        if type(fn) ~= "function" then
+            return nil
+        end
+        local ok, result = pcall(fn, ...)
+        if ok then
+            return result
+        end
+        return nil
+    end
+
+    local function ToNumber(value)
+        if type(value) == "number" then
+            return value
+        end
+        if type(value) == "string" then
+            return tonumber(value:gsub("%%", ""))
+        end
+        return nil
+    end
+
+    local base = ToNumber(SafeCall(GetCombatRatingBonus, CR_VERSATILITY_DAMAGE_DONE)) or 0
+    local extra = 0
+    local rawBonus = ToNumber(SafeCall(GetVersatilityBonus, CR_VERSATILITY_DAMAGE_DONE))
+
+    -- On most clients this is the bonus part; on some clients it may already be total.
+    if rawBonus and rawBonus > 0 then
+        if rawBonus > base + 0.05 then
+            return string.format("%.1f%%", rawBonus)
+        end
+        extra = rawBonus
+    end
+
+    -- Fallback for clients exposing total stats table.
+    local stats = SafeCall(C_PaperDollInfo and C_PaperDollInfo.GetStats)
+    if type(stats) == "table" then
+        local tableTotal = ToNumber(stats.VERSATILITY_DAMAGE_DONE)
+            or ToNumber(stats.VERSATILITY)
+            or ToNumber(stats.versatilityDamageDone)
+            or ToNumber(stats.versatility)
+        if tableTotal and tableTotal > base + extra + 0.05 then
+            return string.format("%.1f%%", tableTotal)
+        end
+    end
+
+    local total = base + extra
+    if total >= 0 then
+        return string.format("%.1f%%", total)
+    end
+    return "--"
 end
 
 local function GetPlayerLeech()
@@ -469,6 +636,11 @@ C_Timer.NewTicker(0.5, UpdateSpeed)
 
 local SettingsFrame = nil
 local checkboxes = {}
+local panelStyles = { "minimal", "default" }
+local panelStyleLabels = {
+    minimal = "无边框",
+    default = "默认边框",
+}
 
 local function RefreshDisplayLayout()
     ApplyDisplaySettings()
@@ -574,6 +746,118 @@ local function CreateSettingsFrame()
         return y - 34
     end
 
+    local function CreateDropdown(parent, label, y, options, getValue, onSelect)
+        local labelText = parent:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+        labelText:SetPoint("TOPLEFT", parent, "TOPLEFT", 0, y)
+        labelText:SetText(label)
+
+        local button = CreateFrame("Button", nil, parent, "BackdropTemplate")
+        button:SetSize(150, 24)
+        button:SetPoint("LEFT", parent, "TOPLEFT", 100, y - 1)
+        button:SetBackdrop({
+            bgFile = "Interface\\Buttons\\WHITE8X8",
+            edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+            tile = true,
+            tileSize = 8,
+            edgeSize = 10,
+            insets = { left = 2, right = 2, top = 2, bottom = 2 }
+        })
+        button:SetBackdropColor(0.10, 0.10, 0.10, 0.95)
+        button:SetBackdropBorderColor(0.85, 0.72, 0.18, 0.85)
+
+        local buttonText = button:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+        buttonText:SetPoint("LEFT", button, "LEFT", 12, 0)
+        buttonText:SetPoint("RIGHT", button, "RIGHT", -24, 0)
+        buttonText:SetJustifyH("LEFT")
+
+        local arrowText = button:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+        arrowText:SetPoint("RIGHT", button, "RIGHT", -10, 0)
+        arrowText:SetText("v")
+
+        local menu = CreateFrame("Frame", nil, parent, "BackdropTemplate")
+        menu:SetSize(150, (#options * 24) + 8)
+        menu:SetPoint("TOPLEFT", button, "BOTTOMLEFT", 0, -4)
+        menu:SetFrameStrata("TOOLTIP")
+        menu:SetFrameLevel((SettingsFrame:GetFrameLevel() or 1) + 50)
+        menu:SetToplevel(true)
+        menu:EnableMouse(true)
+        menu:SetBackdrop({
+            bgFile = "Interface\\Buttons\\WHITE8X8",
+            edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+            tile = true,
+            tileSize = 8,
+            edgeSize = 10,
+            insets = { left = 2, right = 2, top = 2, bottom = 2 }
+        })
+        menu:SetBackdropColor(0.02, 0.02, 0.02, 1.0)
+        menu:SetBackdropBorderColor(0.85, 0.72, 0.18, 0.85)
+        menu:Hide()
+
+        local optionRows = {}
+
+        local function RefreshDropdown()
+            local current = getValue()
+            if not panelStyleLabels[current] then
+                current = defaults.panelStyle
+                CharacterStatsDisplayDB.panelStyle = current
+            end
+            buttonText:SetText(panelStyleLabels[current] or current or "")
+
+            for _, row in ipairs(optionRows) do
+                if row.value == current then
+                    row.text:SetTextColor(1.0, 0.84, 0.12)
+                else
+                    row.text:SetTextColor(1, 1, 1)
+                end
+            end
+        end
+
+        for index, option in ipairs(options) do
+            local optionButton = CreateFrame("Button", nil, menu)
+            optionButton:SetSize(130, 20)
+            optionButton:SetPoint("TOPLEFT", menu, "TOPLEFT", 10, -6 - ((index - 1) * 24))
+            optionButton:SetFrameStrata("TOOLTIP")
+            optionButton:SetFrameLevel(menu:GetFrameLevel() + 1)
+
+            local optionText = optionButton:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
+            optionText:SetAllPoints()
+            optionText:SetJustifyH("LEFT")
+            optionText:SetText(panelStyleLabels[option] or option)
+
+            optionRows[#optionRows + 1] = { value = option, text = optionText }
+
+            optionButton:SetScript("OnClick", function()
+                menu:Hide()
+                arrowText:SetText("v")
+                onSelect(option)
+                RefreshDropdown()
+            end)
+
+            optionButton:SetScript("OnEnter", function()
+                optionText:SetTextColor(1.0, 0.84, 0.12)
+            end)
+            optionButton:SetScript("OnLeave", RefreshDropdown)
+        end
+
+        button:SetScript("OnClick", function()
+            if menu:IsShown() then
+                menu:Hide()
+                arrowText:SetText("v")
+            else
+                menu:Show()
+                arrowText:SetText("^")
+            end
+        end)
+
+        SettingsFrame:HookScript("OnHide", function()
+            menu:Hide()
+            arrowText:SetText("v")
+        end)
+
+        RefreshDropdown()
+        return y - 40
+    end
+
     yOffset = CreateAdjuster(
         content,
         "字体大小",
@@ -598,7 +882,7 @@ local function CreateSettingsFrame()
         function(value) return string.format("%.1f", value) end,
         yOffset,
         function()
-            CharacterStatsDisplayDB.bgAlpha = math.max(0.2, tonumber(string.format("%.1f", CharacterStatsDisplayDB.bgAlpha - 0.1)))
+            CharacterStatsDisplayDB.bgAlpha = math.max(0.0, tonumber(string.format("%.1f", CharacterStatsDisplayDB.bgAlpha - 0.1)))
             ApplyDisplaySettings()
         end,
         function()
@@ -607,6 +891,20 @@ local function CreateSettingsFrame()
         end,
         function()
             return CharacterStatsDisplayDB.bgAlpha
+        end
+    )
+
+    yOffset = CreateDropdown(
+        content,
+        "面板样式",
+        yOffset,
+        panelStyles,
+        function()
+            return CharacterStatsDisplayDB.panelStyle or defaults.panelStyle
+        end,
+        function(value)
+            CharacterStatsDisplayDB.panelStyle = value
+            RefreshDisplayLayout()
         end
     )
 
@@ -628,11 +926,6 @@ local function CreateSettingsFrame()
         end
     )
 
-    local appearanceToggleTitle = content:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-    appearanceToggleTitle:SetPoint("TOPLEFT", content, "TOPLEFT", 0, yOffset)
-    appearanceToggleTitle:SetText("外观开关")
-    yOffset = yOffset - 22
-
     local statTitle = content:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     statTitle:SetPoint("TOPLEFT", content, "TOPLEFT", 0, yOffset)
     statTitle:SetText("额外属性显示")
@@ -652,24 +945,16 @@ local function CreateSettingsFrame()
 
         checkbox:SetScript("OnClick", function(self)
             CharacterStatsDisplayDB[key] = self:GetChecked()
-            if key == "showBackground" or key == "showBorder" then
-                RefreshDisplayLayout()
-            else
-                lastItemLevelUpdate = 0
-                lastPrimaryStatUpdate = 0
-                lastGreenStatsUpdate = 0
-                lastSpeedUpdate = 0
-                CreateStatTexts()
-                UpdateAllStats()
-            end
+            lastItemLevelUpdate = 0
+            lastPrimaryStatUpdate = 0
+            lastGreenStatsUpdate = 0
+            lastSpeedUpdate = 0
+            CreateStatTexts()
+            UpdateAllStats()
         end)
 
         return y - 28
     end
-
-    yOffset = CreateCheckbox(content, "显示背景", "showBackground", yOffset)
-    yOffset = CreateCheckbox(content, "显示边框", "showBorder", yOffset)
-    yOffset = yOffset - 8
 
     yOffset = CreateCheckbox(content, "显示吸血", "showLeech", yOffset)
     yOffset = CreateCheckbox(content, "显示招架", "showParry", yOffset)

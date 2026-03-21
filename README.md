@@ -39,7 +39,7 @@ World of Warcraft\_retail_\Interface\AddOns\CharacterStatsDisplay\
 - 可以勾选显示额外属性（吸血、招架、闪避、格挡）
 - 可以解锁/锁定框体位置
 - 可以调节字体大小、背景透明度和行距
-- 可以切换背景和边框显示
+- 可以切换面板样式（无边框 / 默认边框）
 
 ## 功能特性
 
@@ -54,13 +54,12 @@ World of Warcraft\_retail_\Interface\AddOns\CharacterStatsDisplay\
 - ✅ 字体大小调节
 - ✅ 背景透明度调节
 - ✅ 行距调节
-- ✅ 背景显示开关
-- ✅ 边框显示开关
+- ✅ 面板样式切换
 - ✅ 数据自动保存
 
 ## 版本信息
 
-- **当前版本**: v2.3.0
+- **当前版本**: v2.4.0
 - **游戏版本**: WoW 11.0+ (The War Within)
 - **接口版本**: 120000
 
