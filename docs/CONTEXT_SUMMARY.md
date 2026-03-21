@@ -1,6 +1,6 @@
 # CharacterStatsDisplay 插件开发上下文总结
 
-> 生成时间: 2026-03-15
+> 生成时间: 2026-03-21
 > 用途: 新对话窗口快速理解项目背景
 
 ---
@@ -11,18 +11,18 @@
 - **项目名称**: CharacterStatsDisplay（角色属性显示）
 - **类型**: 魔兽世界（WoW）插件
 - **功能**: 在游戏界面上实时显示角色属性（装等、主属性、绿字、移速等）
-- **开发状态**: v2.0.1 已推送到 develop 分支
+- **开发状态**: v2.3.0 本地开发中
 
 ### 1.2 仓库信息
 - **GitHub**: https://github.com/KainProudmoore/CharacterStatsDisplay
 - **本地路径**: `E:\Files\Repo\CharacterStatsDisplay`
 - **游戏路径**: `E:\Game\BLZ\World of Warcraft\_retail_\Interface\AddOns\CharacterStatsDisplay`
-- **当前分支**: develop
+- **当前分支**: main
 - **主分支**: main
 
 ---
 
-## 二、已实现功能（v2.0.1）
+## 二、已实现功能（v2.3.0）
 
 ### 2.1 核心功能
 | 功能 | 状态 | 说明 |
@@ -34,14 +34,24 @@
 | 额外属性 | ✅ | 吸血/招架/闪避/格挡（可选，默认隐藏） |
 | 设置界面 | ✅ | /csd 命令打开 |
 | 框体移动 | ✅ | 解锁/锁定功能 |
+| 双列布局 | ✅ | 标签左侧、数值右对齐 |
+| 字体大小调节 | ✅ | 设置界面可直接调整 |
+| 背景透明度调节 | ✅ | 设置界面可直接调整 |
+| 行距调节 | ✅ | 设置界面可直接调整 |
+| 背景开关 | ✅ | 可隐藏背景 |
+| 边框开关 | ✅ | 可隐藏边框 |
 | 数据持久化 | ✅ | 位置和设置自动保存 |
 
-### 2.2 UI 调整（v2.0.1）
-- 框体宽度: 130px（紧凑）
+### 2.2 UI 调整（v2.3.0）
+- 框体宽度: 170px（双列布局）
 - 左边距: 12px
-- 右边距: 4px
-- 行间距: 7px（字体高度的一半）
-- 标题字体: GameFontNormalLarge
+- 右边距: 12px
+- 数值列: 60px，右对齐
+- 支持字体大小调整
+- 支持背景透明度调整
+- 基础宽度固定为紧凑布局
+- 支持行距调节
+- 支持背景/边框显示开关
 
 ### 2.3 未实现/移除功能
 - ❌ 属性数值颜色变化（增加绿色/减少红色）- 因稳定性问题移除
@@ -97,6 +107,9 @@ CharacterStatsDisplay/
 
 -- 6. 设置界面
 - CreateSettingsFrame()（创建设置窗口）
+- 外观调节器（字体大小/背景透明度）
+- 外观调节器（行距）
+- 显示开关（背景/边框）
 - 复选框（吸血/招架/闪避/格挡）
 - 锁定/解锁按钮
 
@@ -116,6 +129,11 @@ CharacterStatsDisplayDB = {
     relativePoint = "BOTTOMLEFT",
     xOfs = 20, yOfs = 20,      -- 位置偏移
     locked = false,            -- 是否锁定
+    fontSize = 14,             -- 字体大小
+    bgAlpha = 0.8,             -- 背景透明度
+    lineSpacing = 6,           -- 行距
+    showBackground = true,     -- 显示背景
+    showBorder = true,         -- 显示边框
     showLeech = false,         -- 显示吸血
     showParry = false,         -- 显示招架
     showDodge = false,         -- 显示闪避
@@ -205,17 +223,11 @@ E:\Game\BLZ\World of Warcraft\_retail_\Interface\AddOns\CharacterStatsDisplay\
 ## 八、后续开发建议
 
 ### 8.1 待实现功能（优先级）
-1. **属性变化颜色提示**（高优先级）
-   - 增加时绿色闪烁
-   - 减少时红色闪烁
-   - 需要稳定的实现方案
-
-2. **更多自定义选项**（中优先级）
-   - 字体大小调整
-   - 背景透明度
+1. **更多自定义选项**（中优先级）
    - 边框样式
+   - 标题显示开关
 
-3. **性能优化**（低优先级）
+2. **性能优化**（低优先级）
    - 减少更新频率
    - 优化事件监听
 
@@ -231,40 +243,27 @@ E:\Game\BLZ\World of Warcraft\_retail_\Interface\AddOns\CharacterStatsDisplay\
 ### 9.1 创建属性文本
 ```lua
 local function CreateStatTexts()
-    -- 清除旧的
-    for _, statText in pairs(CharacterStatsDisplay.stats) do
-        statText:Hide()
-    end
-    CharacterStatsDisplay.stats = {}
-    
-    -- 清除缓存
-    currentStats = {}
-    
-    local currentY = -(TOP_PADDING + TITLE_HEIGHT)
-    
-    for _, statInfo in ipairs(statNames) do
-        if not ShouldSkipStat(statInfo) then
-            local statText = CharacterStatsDisplay:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-            statText:SetPoint("TOPLEFT", CharacterStatsDisplay, "TOPLEFT", LEFT_PADDING, currentY)
-            statText:SetJustifyH("LEFT")
-            statText:SetText(statInfo.color .. statInfo.label .. ": |r--")
-            CharacterStatsDisplay.stats[statInfo.key] = statText
-            currentY = currentY - LINE_HEIGHT
-        end
-    end
-    
-    UpdateFrameSize()
+    local labelText = CharacterStatsDisplay:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+    local valueText = CharacterStatsDisplay:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+
+    labelText:SetJustifyH("LEFT")
+    valueText:SetJustifyH("RIGHT")
+
+    CharacterStatsDisplay.stats[statInfo.key] = {
+        label = labelText,
+        value = valueText,
+    }
 end
 ```
 
 ### 9.2 更新属性
 ```lua
 local function UpdateStat(key, value, color, label)
+    local statRow = CharacterStatsDisplay.stats[key]
     if currentStats[key] ~= value then
         currentStats[key] = value
-        if CharacterStatsDisplay.stats[key] then
-            CharacterStatsDisplay.stats[key]:SetText(color .. label .. ": |r" .. value)
-        end
+        statRow.label:SetText(color .. label .. "|r")
+        statRow.value:SetText("|cFFFFFFFF" .. value .. "|r")
     end
 end
 ```
